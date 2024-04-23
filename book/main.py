@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from redis_dict import RedisDict
 import os
 import sys
 from aiogram import Bot, Dispatcher, F
@@ -32,17 +33,14 @@ async def help_command(message: Message) -> None:
 /help - Yordam''')
 
 
+@dp.message(Command(commands='id'))  # /id
+async def command_start_handler(message: Message) -> None:
+    await message.answer(str(message.from_user.id))
+
+
 @dp.message(F.text == '📚 Kitoblar')
 async def books(message: Message) -> None:
     ikb = InlineKeyboardBuilder()
-    # ikb.add(InlineKeyboardButton(text='⚡️ IKAR', callback_data='ikar'), InlineKeyboardButton(text='📚 Factor books kitoblari'))
-    # ikb.add(InlineKeyboardButton(text='💸 Biznes kitoblar'), InlineKeyboardButton(text='☪️ Diniy kitoblar'))
-    # ikb.add(InlineKeyboardButton(text='📚 Boshqa kitoblar'), InlineKeyboardButton(text='🔮 Psihologik kitoblar'))
-    # ikb.add(InlineKeyboardButton(text='👨‍👩‍👧‍👦 Tarbiyaviy-oilaviy kitoblar'),
-    #         InlineKeyboardButton(text='🇹🇷 Turk badiy-mar\'ifiy kitoblar'))
-    # ikb.add(InlineKeyboardButton(text='📚 Badiy Ramanlar'), InlineKeyboardButton(text='📚 Qissa va Romanlar'))
-    # ikb.add(InlineKeyboardButton(text='📚 Badiy kitoblar va Qissalar'),
-    #         InlineKeyboardButton(text='🔮 Psihologik kitoblar'))
     ikb.row(
         InlineKeyboardButton(text='⚡️IKAR', callback_data='ikar'),
         InlineKeyboardButton(text='📚Factor books kitoblar', callback_data='factor_books')
@@ -70,23 +68,48 @@ async def books(message: Message) -> None:
     await message.answer('Kategoriyalardan birini tanlang', reply_markup=ikb.as_markup())
 
 
-@dp.callback_query()
+@dp.callback_query(F.data.endswith('ikar'))
 async def callback_query(callback: CallbackQuery) -> None:
     ikb = InlineKeyboardBuilder()
     ikb.add(InlineKeyboardButton(text="IKAR to'plami", callback_data="ikarlar"),
-            InlineKeyboardButton(text='◀️Orqaga', callback_data='orqaga'))
-    if callback.data == 'ikar':
-        await callback.message.edit_text('⚡️ IKAR', reply_markup=ikb.as_markup())
+            InlineKeyboardButton(text="Savatcha", callback_data="savatcha")),
+    ikb.add(InlineKeyboardButton(text="◀️Orqaga", callback_data="orqaga"))
+    await callback.message.edit_text('⚡️ IKAR', reply_markup=ikb.as_markup())
 
 
-@dp.message(Command(commands='id'))  # /id
-async def command_start_handler(message: Message) -> None:
-    await message.answer(str(message.from_user.id))
+@dp.callback_query(F.data.startswith("ikarlar"))
+async def ikar(callback: CallbackQuery, bot: Bot):
+    ikb = InlineKeyboardBuilder()
+    ikb.row(InlineKeyboardButton(text="-", callback_data="change-minus"),
+            InlineKeyboardButton(text="0", callback_data="ikar"),
+            InlineKeyboardButton(text="+", callback_data="change-plus")
+            )
+    ikb.row(InlineKeyboardButton(text="◀️Orqaga", callback_data="ortga"))
+    await callback.message.edit_text('⚡️ IKAR', reply_markup=ikb.as_markup())
 
 
-@dp.message(F.text == "IKAR to'plami")
-async def ikar(message: Message):
-    await message.answer()
+data = RedisDict()
+data["count"] = 0
+
+
+# TERMINALDAN run qib qoyish kerak
+# docker ps
+# docker (redis/alpine) ga qarimiz xar doim
+# docker start 71
+
+@dp.callback_query(F.data.startswith("change"))
+async def ikar(callback: CallbackQuery):
+    if callback.data.endswith("plus"):
+        data['count'] += 1
+    else:
+        data['count'] -= 1
+    ikb = InlineKeyboardBuilder()
+    ikb.row(InlineKeyboardButton(text="-", callback_data="change-minus"),
+            InlineKeyboardButton(text=str(data['count']), callback_data="ikar"),
+            InlineKeyboardButton(text="+", callback_data="change-plus")
+            )
+    ikb.row(InlineKeyboardButton(text="◀️Orqaga", callback_data="ortga"))
+    await callback.message.edit_text('⚡️ IKAR', reply_markup=ikb.as_markup())
 
 
 async def main() -> None:
