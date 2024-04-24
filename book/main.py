@@ -28,7 +28,7 @@ async def command_start_handler(message: Message) -> None:
 
 @dp.message(Command(commands='help'))
 async def help_command(message: Message) -> None:
-    await message.answer('''Buyruqlar: 
+    await message.answer('''Buyruqlar:
 /start - Botni ishga tushirish
 /help - Yordam''')
 
@@ -78,7 +78,7 @@ async def callback_query(callback: CallbackQuery) -> None:
 
 
 @dp.callback_query(F.data.startswith("ikarlar"))
-async def ikar(callback: CallbackQuery, bot: Bot):
+async def icar_count(callback: CallbackQuery):
     ikb = InlineKeyboardBuilder()
     ikb.row(InlineKeyboardButton(text="-", callback_data="change-minus"),
             InlineKeyboardButton(text="0", callback_data="ikar"),
@@ -98,14 +98,14 @@ data["count"] = 0
 # docker start 71
 
 @dp.callback_query(F.data.startswith("change"))
-async def ikar(callback: CallbackQuery):
+async def count_data(callback: CallbackQuery):
     if callback.data.endswith("plus"):
         data['count'] += 1
     else:
         data['count'] -= 1
     ikb = InlineKeyboardBuilder()
     ikb.row(InlineKeyboardButton(text="-", callback_data="change-minus"),
-            InlineKeyboardButton(text=str(data['count']), callback_data="ikar"),
+            InlineKeyboardButton(text=str(data['count']), callback_data="count"),
             InlineKeyboardButton(text="+", callback_data="change-plus")
             )
     ikb.row(InlineKeyboardButton(text="◀️Orqaga", callback_data="ortga"))
