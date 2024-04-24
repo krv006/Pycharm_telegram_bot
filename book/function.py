@@ -19,3 +19,5 @@
 #     )
 #     await callback.message.edit_text('Savatcha narxlar va nechatliklarni belgilash uchun:',
 #                                      reply_markup=ikb.as_markup())
+
+# redict dictni  ichini tozalash uchun clear degan function qoyamiz

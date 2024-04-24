@@ -14,8 +14,7 @@ load_dotenv('.env')
 TOKEN = os.getenv("BOT_TOKEN")
 
 dp = Dispatcher()
-ADMIN = 6126220359
-
+ADMIN=1305675046
 
 @dp.message(CommandStart())
 async def command_start_handler(message: Message) -> None:
