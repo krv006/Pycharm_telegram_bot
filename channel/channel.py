@@ -14,7 +14,11 @@ ADMIN_IDS = 1305675046
 
 TOKEN = '6839903315:AAEAThMFk2rFE3ja229EKrxfT-cANlS02e0'
 
-CHANNEL_IDS = [-1002124192341, -1002084653626, -1002045673840, -1002025286923]
+# CHANNEL_IDS = [-1002124192341, -1002084653626, -1002045673840, -1002025286923]
+CHANNEL_IDS = {-1002124192341: {'name': 'Prosta', 'url': 'https://t.me/kanal_1_obuna'},
+               -1002045673840: {'name': 'Prosta2', 'url': 'https://t.me/kanal_2_obuna'},
+               -1002025286923: {'name': 'Prosta3', 'url': 'https://t.me/kanal_3_obuna'},
+               -1002025286923: {'name': 'RV', 'url': 'https://t.me/rv_006'}}
 
 redis_dict = RedisDict()
 # redis_dict.clear()
@@ -83,16 +87,21 @@ async def add_chanel_id(message: Message) -> None:
     if str(message.chat.id) in str(ADMINS):
         ikb = InlineKeyboardBuilder()
         ikb.row(InlineKeyboardButton(text="Nomi", callback_data="nomi"),
+                InlineKeyboardButton(text='id', callback_data="id"),
+                InlineKeyboardButton(text="url", callback_data="url"),
+                InlineKeyboardButton(text="Bekor qilish", callback_data="change-iks")
+                )
+        ikb.row(InlineKeyboardButton(text="Prosta", callback_data="nomi"),
                 InlineKeyboardButton(text='-1002124192341', callback_data="id"),
                 InlineKeyboardButton(text="url", url='https://t.me/kanal_1_obuna'),
                 InlineKeyboardButton(text="❌", callback_data="change-iks")
                 )
-        ikb.row(InlineKeyboardButton(text="Nomi", callback_data="nomi"),
+        ikb.row(InlineKeyboardButton(text="Prosta2", callback_data="nomi"),
                 InlineKeyboardButton(text='-1002084653626', callback_data="id"),
                 InlineKeyboardButton(text="url", url='https://t.me/kanal_2_obuna'),
                 InlineKeyboardButton(text="❌", callback_data="change-iks")
                 )
-        ikb.row(InlineKeyboardButton(text="Nomi", callback_data="nomi"),
+        ikb.row(InlineKeyboardButton(text="Prosta3", callback_data="nomi"),
                 InlineKeyboardButton(text='-1002045673840', callback_data="id"),
                 InlineKeyboardButton(text="url", url='https://t.me/kanal_3_obuna'),
                 InlineKeyboardButton(text="❌", callback_data="change-iks")
