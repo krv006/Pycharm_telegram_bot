@@ -1,23 +1,27 @@
-import asyncio
-import logging
-from redis_dict import RedisDict
-import sys
-from aiogram import Bot, Dispatcher, F
-from aiogram.filters import CommandStart, Command
-from aiogram.types import Message, KeyboardButton, InlineKeyboardButton, BotCommand, CallbackQuery
-from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
+from aiogram.filters import Command
+from aiogram.types import KeyboardButton, BotCommand
+from aiogram.utils.keyboard import ReplyKeyboardBuilder
 from middleware import UserAddMiddleware
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
+import asyncio
+import logging
+import sys
+from aiogram import Bot, Dispatcher, F
+from aiogram.client.default import DefaultBotProperties
+from aiogram.enums import ParseMode, ChatMemberStatus
+from aiogram.filters import CommandStart
+from aiogram.types import Message, InlineKeyboardButton, CallbackQuery
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+from redis_dict import RedisDict
 
 ADMIN_IDS = 1305675046
 
 TOKEN = '6839903315:AAEAThMFk2rFE3ja229EKrxfT-cANlS02e0'
 
-# CHANNEL_IDS = [-1002124192341, -1002084653626, -1002045673840, -1002025286923]
 CHANNEL_IDS = {-1002124192341: {'name': 'Prosta', 'url': 'https://t.me/kanal_1_obuna'},
-               -1002045673840: {'name': 'Prosta2', 'url': 'https://t.me/kanal_2_obuna'},
-               -1002025286923: {'name': 'Prosta3', 'url': 'https://t.me/kanal_3_obuna'},
+               -1002084653626: {'name': 'Prosta2', 'url': 'https://t.me/kanal_2_obuna'},
+               -1002045673840: {'name': 'Prosta3', 'url': 'https://t.me/kanal_3_obuna'},
                -1002025286923: {'name': 'RV', 'url': 'https://t.me/rv_006'}}
 
 redis_dict = RedisDict()
@@ -31,19 +35,65 @@ class Addchannel(StatesGroup):
     id_ = State()
 
 
-# async def inline_keyboards(message: Message):
-#     ikb = InlineKeyboardBuilder()
-#     ikb.row(InlineKeyboardButton(text='1 - Kanal', url='https://t.me/kanal_1_obuna'))
-#     ikb.row(InlineKeyboardButton(text='2 - Kanal', url='https://t.me/kanal_2_obuna'))
-#     ikb.row(InlineKeyboardButton(text='3 - Kanal', url='https://t.me/kanal_3_obuna'))
-#     ikb.row(InlineKeyboardButton(text='4 - Kanal', url='https://t.me/rv_006'))
-#     ikb.row(InlineKeyboardButton(text='Tasdiqlash', callback_data='tasdiqlash'))
-#     await message.answer('Kanallarag obuna boling', reply_markup=ikb.as_markup())
+async def inline_keyboards(message: Message):
+    ikb = InlineKeyboardBuilder()
+    ikb.row(InlineKeyboardButton(text='1 - Kanal', url='https://t.me/kanal_1_obuna'))
+    ikb.row(InlineKeyboardButton(text='2 - Kanal', url='https://t.me/kanal_2_obuna'))
+    ikb.row(InlineKeyboardButton(text='3 - Kanal', url='https://t.me/kanal_3_obuna'))
+    ikb.row(InlineKeyboardButton(text='4 - Kanal', url='https://t.me/rv_006'))
+    ikb.row(InlineKeyboardButton(text='Tasdiqlash', callback_data='tasdiqlash'))
+    await message.answer('Kanallarag obuna boling', reply_markup=ikb.as_markup())
 
 
 @dp.message(Command(commands='id'))  # /id
 async def command_start_handler(message: Message) -> None:
     await message.answer(str(message.from_user.id))
+
+
+async def check_member_of_channel(user_id, bot: Bot, CHANNEL_ID) -> bool:
+    member = await bot.get_chat_member(CHANNEL_ID, user_id)
+    return member.status in (ChatMemberStatus.MEMBER, ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.CREATOR)
+
+
+async def check_member_of_channels(user_id, bot: Bot) -> bool:
+    is_in_channel = True
+    for i in CHANNEL_IDS:
+        if not await check_member_of_channel(user_id, bot, i):
+            is_in_channel = False
+    return is_in_channel
+
+
+@dp.message(CommandStart())
+async def check_messages(message: Message, bot: Bot):
+    if message.from_user.id not in redis_dict or not await check_member_of_channels(message.from_user.id, bot):
+        await inline_keyboards(message)
+
+
+@dp.callback_query(F.data.startswith('tasdiqlash'))
+async def check_messages(callback_query: CallbackQuery, bot: Bot):
+    is_in_channel = await check_member_of_channels(callback_query.from_user.id, bot)
+    if is_in_channel:
+        await bot.delete_message(callback_query.from_user.id, callback_query.message.message_id)
+        await callback_query.answer('Tasdiqlandi')
+        redis_dict[str(callback_query.from_user.id)] = True
+    else:
+        await callback_query.answer('Tasdiqlanmadi')
+
+
+@dp.message()
+async def messages(message: Message, bot: Bot):
+    if message.from_user.id not in redis_dict or not await check_member_of_channels(message.from_user.id, bot):
+        await inline_keyboards(message)
+
+
+async def main() -> None:
+    bot = Bot(TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.MARKDOWN_V2))
+    await dp.start_polling(bot)
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+    asyncio.run(main())
 
 
 @dp.message(CommandStart())
@@ -86,10 +136,10 @@ async def command_id(message: Message) -> None:
 async def add_chanel_id(message: Message) -> None:
     if str(message.chat.id) in str(ADMINS):
         ikb = InlineKeyboardBuilder()
-        ikb.row(InlineKeyboardButton(text="Nomi", callback_data="nomi"),
-                InlineKeyboardButton(text='id', callback_data="id"),
-                InlineKeyboardButton(text="url", callback_data="url"),
-                InlineKeyboardButton(text="Bekor qilish", callback_data="change-iks")
+        ikb.row(InlineKeyboardButton(text="NOMI", callback_data="nomi"),
+                InlineKeyboardButton(text='ID', callback_data="id"),
+                InlineKeyboardButton(text="URL", callback_data="url"),
+                InlineKeyboardButton(text="O'CHIRISH", callback_data="change-iks")
                 )
         ikb.row(InlineKeyboardButton(text="Prosta", callback_data="nomi"),
                 InlineKeyboardButton(text='-1002124192341', callback_data="id"),
