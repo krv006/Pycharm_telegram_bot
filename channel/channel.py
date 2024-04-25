@@ -57,35 +57,36 @@ async def add_chanel_id(message: Message, state: FSMContext) -> None:
 @dp.message(Addchannel.id_)
 async def command_id(message: Message) -> None:
     try:
-        if message.text.startswith("-") and int(message.text) in CHANNEL_IDS:
-            redis_dict[message.message.id] = True
+        if int(message.text) in CHANNEL_IDS:
+            redis_dict[message.text] = True
             await message.answer(text="Kanaldi bazaga saqlab oldik")
+            print("ADD DICT")
         else:
-            await message.answer("INT tipida emas siz kiritgan text")
+            await message.answer("id da xatolik bor")
     except ValueError:
         await message.answer("INT tipida xato bor")
 
 
-# @dp.message(Command(commands='channels'))
-# async def add_chanel_id(message: Message) -> None:
-#     if str(message.chat.id) in str(ADMINS):
-#         ikb = InlineKeyboardBuilder()
-#         ikb.row(InlineKeyboardButton(text="Nomi", callback_data="nomi"),
-#                 InlineKeyboardButton(text='id', callback_data="id"),
-#                 InlineKeyboardButton(text="url", callback_data="url"),
-#                 InlineKeyboardButton(text="❌", callback_data="x")
-#                 )
-#         ikb.row(InlineKeyboardButton(text='1 - Kanal', url='https://t.me/kanal_1_obuna'))
-#         ikb.row(InlineKeyboardButton(text='2 - Kanal', url='https://t.me/kanal_2_obuna'))
-#         ikb.row(InlineKeyboardButton(text='3 - Kanal', url='https://t.me/kanal_3_obuna'))
-#         ikb.row(InlineKeyboardButton(text='4 - Kanal', url='https://t.me/rv_006'))
-#         ikb.row(InlineKeyboardButton(text='Tasdiqlash', callback_data='tasdiqlash'))
-#         await message.answer('Kanallarag obuna boling', reply_markup=ikb.as_markup())
-#
-#     else:
-#         await message.answer(text='Siz admin emassiz bu funksiya faqat admin uchun')
-#
-#
+@dp.message(Command(commands='channels'))
+async def add_chanel_id(message: Message) -> None:
+    if str(message.chat.id) in str(ADMINS):
+        ikb = InlineKeyboardBuilder()
+        ikb.row(InlineKeyboardButton(text="Nomi", callback_data="nomi"),
+                InlineKeyboardButton(text='id', callback_data="id"),
+                InlineKeyboardButton(text="url", callback_data="url"),
+                InlineKeyboardButton(text="❌", callback_data="x")
+                )
+        ikb.row(InlineKeyboardButton(text='1 - Kanal', url='https://t.me/kanal_1_obuna'))
+        ikb.row(InlineKeyboardButton(text='2 - Kanal', url='https://t.me/kanal_2_obuna'))
+        ikb.row(InlineKeyboardButton(text='3 - Kanal', url='https://t.me/kanal_3_obuna'))
+        ikb.row(InlineKeyboardButton(text='4 - Kanal', url='https://t.me/rv_006'))
+        ikb.row(InlineKeyboardButton(text='Tasdiqlash', callback_data='tasdiqlash'))
+        await message.answer('Kanallarag obuna boling', reply_markup=ikb.as_markup())
+
+    else:
+        await message.answer(text='Siz admin emassiz bu funksiya faqat admin uchun')
+
+
 # async def on_startup(bot: Bot) -> None:
 #     print('Bot started!')
 #     command_list = [
