@@ -1,23 +1,17 @@
-# from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-# from aiogram.types import CallbackQuery
-#
-#
-# @dp.callback_query(lambda c: c.data and c.data.startswith("change"))
-# async def savatcha(callback: CallbackQuery):
-#     ikb = InlineKeyboardMarkup(row_width=3)
-#     products = []
-#     for product in products:
-#         ikb.insert(
-#             InlineKeyboardButton(
-#                 text=f"{product['name']} - ${product['price']} - {product['quantity']}",
-#                 callback_data=f"product_{product['name'].replace(' ', '_')}"
-#             )
-#         )
-#     ikb.add(
-#         InlineKeyboardButton(text="🛒 Savatcha", callback_data="savat"),
-#         InlineKeyboardButton(text="◀️ Orqaga", callback_data="ortga")
-#     )
-#     await callback.message.edit_text('Savatcha narxlar va nechatliklarni belgilash uchun:',
-#                                      reply_markup=ikb.as_markup())
+from aiogram.types import CallbackQuery
+from redis_dict import RedisDict
 
-# redict dictni  ichini tozalash uchun clear degan function qoyamiz
+data = RedisDict()
+
+print(data)
+def savat(callback: CallbackQuery, soni, tavar_narxi):
+    # product = {}
+    # product['soni'] = soni
+    # product['tavar_narxi'] = tavar_narxi
+    data[str(callback.from_user.id)] = f'''🛒 Savat 
+
+1. IKAR to'plami
+{soni} x 259,000 ={tavar_narxi * soni} so'm
+
+Jami: {tavar_narxi * soni} so'm'''
+    return data[str(callback.from_user.id)]

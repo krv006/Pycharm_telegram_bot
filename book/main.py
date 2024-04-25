@@ -9,6 +9,7 @@ from aiogram.types import Message, KeyboardButton, \
     InlineKeyboardButton, CallbackQuery
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 from dotenv import load_dotenv
+from function import savat
 
 load_dotenv('.env')
 TOKEN = os.getenv("BOT_TOKEN")
@@ -75,16 +76,31 @@ async def callback_query(callback: CallbackQuery) -> None:
     ikb.add(InlineKeyboardButton(text="◀️Orqaga", callback_data="orqaga"))
     await callback.message.edit_text('⚡️ IKAR', reply_markup=ikb.as_markup())
 
+counter = 1
 
-@dp.callback_query(F.data.startswith("ikarlar"))
-async def icar_count(callback: CallbackQuery):
+@dp.callback_query(F.data.startswith("change"))
+async def ikar(callback: CallbackQuery):
+    global counter
+    if callback.data.endswith("plus"):
+        counter += 1
+    else:
+        counter -= 1
     ikb = InlineKeyboardBuilder()
     ikb.row(InlineKeyboardButton(text="-", callback_data="change-minus"),
-            InlineKeyboardButton(text="0", callback_data="ikar"),
+            InlineKeyboardButton(text=str(counter), callback_data="ikar"),
             InlineKeyboardButton(text="+", callback_data="change-plus")
             )
-    ikb.row(InlineKeyboardButton(text="◀️Orqaga", callback_data="ortga"))
+    ikb.row(InlineKeyboardButton(text="◀️Orqaga", callback_data="ortga"),
+            InlineKeyboardButton(text='🛒 Savatka qoshish', callback_data="savatka"))
     await callback.message.edit_text('⚡️ IKAR', reply_markup=ikb.as_markup())
+
+
+@dp.callback_query(F.data.startswith("savatka"))
+async def qoshish(callback: CallbackQuery):
+    global counter
+    await callback.message.edit_text(savat(callback, counter, 259000))
+
+
 
 
 data = RedisDict()
